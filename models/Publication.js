@@ -21,8 +21,7 @@ const postSchema = new Schema({
     certificate: {
         type: String,
         required: true,
-        enum: ['Yes','No'],
-        description: "can only be either 'Yes' or 'No'"
+        enum: ['Yes','No']
     }, 
 
     author: {
@@ -30,7 +29,7 @@ const postSchema = new Schema({
         ref: 'User'
     },
 
-    users: {
+    usersShared: {
         type: [Types.ObjectId], 
         ref: 'User',
         default: []

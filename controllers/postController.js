@@ -1,22 +1,26 @@
-const { createPost } = require('../services/postService');
+const { hasUser } = require('../middlewares/guards');
+const { createPost, getAll, getById, getOneDetailed, updateById, deleteById } = require('../services/postService');
 const { parseError } = require('../util/parser');
 
 
 const postController = require('express').Router();
 
-postController.get('/create', (req, res) => {
+postController.get('/create', hasUser(), (req, res) => {
     res.render('create', {
         title: 'Create Post'
     });
 });
 
-postController.get('/gallery', (req, res) => {
+postController.get('/', async (req, res) => {
+    const publications = await getAll();
     res.render('gallery', {
-        title: 'Gallery of Posts'
+        title: 'Gallery of Posts',
+        user: req.user,
+        publications
     });
 })
 
-postController.post('/create', async (req, res) => {
+postController.post('/create', hasUser(), async (req, res) => {
     const post = {
         title: req.body.title,
         paintingTech: req.body.paintingTech,
@@ -27,8 +31,8 @@ postController.post('/create', async (req, res) => {
 
     try {
         await createPost(post);
-        res.redirect('/posts/gallery/')
-    } catch(error) {
+        res.redirect('/posts')
+    } catch (error) {
         res.render('create', {
             title: 'Create Post',
             body: post,
@@ -36,5 +40,62 @@ postController.post('/create', async (req, res) => {
         });
     }
 });
+
+
+postController.get('/:postId/details', async (req, res) => {
+    const post = await getOneDetailed(req.params.postId);
+    const isAuthor = post.author._id == req.user?._id;
+
+    res.render('details', {
+        title: post.title,
+        post,
+        isAuthor
+    });
+})
+
+postController.get('/:postId/edit', async (req, res) => {
+    const post = await getById(req.params.postId);
+
+    if (post.author._id != req.user?._id) {
+        return res.redirect('/auth/login')
+    }
+
+    res.render('edit', {
+        title: 'Edit Publication',
+        post
+    });
+})
+
+postController.post('/:postId/edit', async (req, res) => {
+    const post = await getById(req.params.postId);
+
+    if (post.author._id != req.user?._id) {
+        return res.redirect('/auth/login')
+    }
+
+    try {
+        await updateById(req.params.postId, req.body);
+        res.redirect(`/posts/${req.params.postId}/details`);
+    } catch (error) {
+        res.render('edit', {
+            title: 'Edit Publication',
+            errors: parseError(error),
+            post: req.body
+        });
+    }
+})
+
+
+postController.get('/:postId/delete', async (req, res) => {
+    const post = await getById(req.params.postId);
+
+    if (post.author._id != req.user?._id) {
+        return res.redirect('/auth/login')
+    }
+
+    await deleteById(req.params.postId);
+    res.redirect('/');
+})
+
 
 module.exports = postController;

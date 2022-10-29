@@ -11,7 +11,7 @@ function hasUser() {
 function isGuest() {
     return (req, res, next) => {
         if (req.user) {
-            res.redirect('/'); //TODO check assigment for correct redirect
+            res.redirect('/posts/gallery'); //TODO check assigment for correct redirect
         } else {
             next();
         }

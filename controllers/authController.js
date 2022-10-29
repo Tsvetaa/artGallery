@@ -1,17 +1,18 @@
+const { hasUser, isGuest } = require('../middlewares/guards');
 const { register, login } = require('../services/userService');
 const {parseError} = require('../util/parser');
 
 const authController = require('express').Router();
 
 
-authController.get('/register', (req, res) => {
+authController.get('/register', isGuest(),  (req, res) => {
     //TODO replace with actual view by assigment
     res.render('register', {
         title: 'Register Page'
     });
 });
 
-authController.post('/register', async (req, res) => {
+authController.post('/register', isGuest(), async (req, res) => {
     try {
         if (req.body.username == '' || req.body.password == '') {
             throw new Error('All fields are required');
@@ -43,14 +44,14 @@ authController.post('/register', async (req, res) => {
     }
 });
 
-authController.get('/login', (req, res) => {
+authController.get('/login', isGuest(), (req, res) => {
     //TODO replace with actual view by assigment
     res.render('login', {
         title: 'Login Page'
     });
 });
 
-authController.post('/login', async (req, res) => {
+authController.post('/login', isGuest(), async (req, res) => {
     try {
         const token = await login(req.body.username, req.body.password);
 
@@ -71,7 +72,7 @@ authController.post('/login', async (req, res) => {
     }
 })
 
-authController.get('/logout', (req, res) => {
+authController.get('/logout', hasUser(), (req, res) => {
     res.clearCookie('token');
     res.redirect('/');
 })
