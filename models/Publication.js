@@ -33,6 +33,11 @@ const postSchema = new Schema({
         type: [Types.ObjectId], 
         ref: 'User',
         default: []
+    },
+
+    userCount: {
+        type: Number,
+        default: 0
     }
 });
 

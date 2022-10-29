@@ -1,5 +1,5 @@
 const { hasUser } = require('../middlewares/guards');
-const { createPost, getAll, getById, getOneDetailed, updateById, deleteById } = require('../services/postService');
+const { createPost, getAll, getById, getOneDetailed, updateById, deleteById, share } = require('../services/postService');
 const { parseError } = require('../util/parser');
 
 
@@ -45,13 +45,15 @@ postController.post('/create', hasUser(), async (req, res) => {
 postController.get('/:postId/details', async (req, res) => {
     const post = await getOneDetailed(req.params.postId);
     const isAuthor = post.author._id == req.user?._id;
+    let isShared = post.usersShared.map(x => x.toString()).includes(req.user._id.toString());
 
     res.render('details', {
         title: post.title,
         post,
-        isAuthor
+        isAuthor,
+        isShared
     });
-})
+});
 
 postController.get('/:postId/edit', async (req, res) => {
     const post = await getById(req.params.postId);
@@ -64,7 +66,7 @@ postController.get('/:postId/edit', async (req, res) => {
         title: 'Edit Publication',
         post
     });
-})
+});
 
 postController.post('/:postId/edit', async (req, res) => {
     const post = await getById(req.params.postId);
@@ -83,7 +85,7 @@ postController.post('/:postId/edit', async (req, res) => {
             post: req.body
         });
     }
-})
+});
 
 
 postController.get('/:postId/delete', async (req, res) => {
@@ -95,7 +97,20 @@ postController.get('/:postId/delete', async (req, res) => {
 
     await deleteById(req.params.postId);
     res.redirect('/');
-})
+});
+
+
+postController.get('/:postId/share', hasUser(), async (req, res) => {
+    const post = await getById(req.params.postId);
+    let isShared = post.usersShared.map(x => x.toString()).includes(req.user._id.toString());
+
+    if(post.author._id != req.user._id
+    && isShared == false) {
+        await share(req.params.postId, req.user._id);
+    }
+
+    res.redirect('/');
+});
 
 
 module.exports = postController;

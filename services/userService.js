@@ -53,9 +53,14 @@ function verifyToken(token) {
     return jwt.verify(token, JWT_SECRET);
 }
 
+async function getUserDataById(userId) {
+    return User.findById(userId).lean();
+}
+
 module.exports = {
     register,
     login,
-    verifyToken
+    verifyToken, 
+    getUserDataById
 
 };

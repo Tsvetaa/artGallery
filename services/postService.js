@@ -33,11 +33,25 @@ async function deleteById(postId) {
     return Post.findByIdAndDelete(postId);
 }
 
+async function share(postId, userId) {
+    const existing = await Post.findById(postId);
+    existing.usersShared.push(userId);
+    existing.userCount++;
+
+    return existing.save()
+};
+
+async function getByUserShared(userId) {
+    return (await Post.find({usersShared: userId}).lean())
+}
+
 module.exports = {
     getAll,
     getById,
     getOneDetailed,
     createPost,
     updateById, 
-    deleteById
+    deleteById, 
+    share,
+    getByUserShared
 }

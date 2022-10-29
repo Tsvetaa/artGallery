@@ -37,8 +37,7 @@ authController.post('/register', isGuest(), async (req, res) => {
             title: 'Register Page',
             errors,
             body: {
-                username: req.body.username,
-                address: req.body.address
+                username: req.body.username
             }
         });
     }
